@@ -1,97 +1,100 @@
-import React, { useEffect, useState } from 'react'
-import { Socket } from 'socket.io-client'
+import React, { useEffect, useState } from 'react';
+import { Socket } from 'socket.io-client';
+import Board from './Board';
 
-const tinygraphsUrl = 'http://tinygraphs.com/labs/isogrids/hexa16/tinygraphs?theme=heatwave&numcolors=4&size=220&fmt=svg'
+import CreateUsername from './CreateUsername';
+import Lobby from './Lobby';
+import WaitingForPlayer from './WaitingForPlayer';
 
-interface IProps {
-    socket: Socket
-}
+const tinygraphsUrl =
+  'http://tinygraphs.com/labs/isogrids/hexa16/tinygraphs?theme=heatwave&numcolors=4&size=220&fmt=svg';
 
 enum STATUS {
-    LOADING,
-    LOBBY,
-    WAITING_FOR_PLAYER,
-    IN_GAME
+  LOADING,
+  CREATE_USER,
+  LOBBY,
+  WAITING_FOR_PLAYER,
+  IN_GAME,
 }
+export interface IGame {
+  players: { username: string; id: string }[];
+  board: number[][];
+  id: string;
+  status: string;
+  naughtsPlayerIndex: number;
+  crossesPlayerIndex: number;
+}
+
+type IProps = {
+  socket: Socket;
+};
 
 const Game = ({ socket }: IProps) => {
-    
-    const [status, setStatus] = useState(STATUS.LOBBY)
+  const [status, setStatus] = useState(STATUS.CREATE_USER);
 
-    useEffect(() => {
-        const joinGameListener = () => {
+  const [games, setGames] = useState<IGame[]>([]);
 
-        }
+  const [currentGame, setCurrentGame] = useState<IGame | null>(null);
 
-        const startGameListener = () => {
-        }
+  useEffect(() => {
+    const connectedListener = (games: IGame[]) => {
+      console.log(games);
+      setGames(games);
+      setStatus(STATUS.LOBBY);
+    };
 
-        socket.on('joinGame', joinGameListener)
-        socket.on('startGame', startGameListener)
+    const waitingForPlayerListener = (game: IGame) => {
+      setCurrentGame(game);
+      setStatus(STATUS.WAITING_FOR_PLAYER);
+    };
 
+    const playGameListener = (game: IGame) => {
+      setCurrentGame(game);
+      setStatus(STATUS.IN_GAME);
+    };
 
-        return () => {
-            socket.off('joinGame', joinGameListener)
-            socket.off('startGame', startGameListener)
-        }
-    }, [socket])
+    socket.on('connected', connectedListener);
+    socket.on('waiting for player', waitingForPlayerListener);
+    socket.on('play game', playGameListener);
+    return () => {
+      socket.off('connected', connectedListener);
+      socket.off('waiting for player', waitingForPlayerListener);
+      socket.off('play game', playGameListener);
+    };
+  }, [socket]);
 
-    switch (status) {
-        case STATUS.LOBBY:
-            return <Lobby />
-        case STATUS.WAITING_FOR_PLAYER:
-            return <WaitingForPlayer />
-        default:
-            return <Error />
-    }
-}
-
-const WaitingForPlayer = () => {
-    return (<section className="container mx-auto">
-            <div className="p-10">
-                <h1 className="text-center font-bold text-2xl pb-5">Waiting for another player to join</h1>
-                <div className="flex justify-center gap-5">
-                    <div className="text-center p-5 bg-white rounded-lg shadow-xl">
-                        <img className="rounded-lg h-32 w-32" src={`http://tinygraphs.com/labs/isogrids/hexa16/player1?theme=bythepool&numcolors=4&size=220&fmt=svg`} />
-                        <h2>Player 1</h2>
-                    </div>
-                    <div className="text-center p-5 bg-white rounded-lg shadow-xl">
-                        <img className="rounded-lg h-32 w-32" src={`http://tinygraphs.com/labs/isogrids/hexa16/player2?theme=heatwave&numcolors=4&size=220&fmt=svg`} />
-                        <h2>Player 2</h2>
-                    </div>
-                </div>
-            </div>
-        </section>)
-}
-
-const Lobby = () => {
-    return (<section className="container mx-auto">
-        <div>
-            <div className="flex justify-between items-center pb-4">
-                <h1 className="text-center font-bold text-2xl">Lobby</h1>
-                <button className="bg-white px-4 py-2 rounded-md shadow-xl">Create Game</button>
-            </div>
-                <div className="grid gap-3">
-                    <div className="flex justify-between p-5 bg-white rounded-lg shadow-xl items-center">
-                        <div className="flex items-center space-x-5">
-                        <img className="rounded-lg h-16 w-16" src={`http://tinygraphs.com/labs/isogrids/hexa16/player2?theme=heatwave&numcolors=4&size=220&fmt=svg` }/>
-                         <h2>Player 2</h2>
-                        </div>
-                        <div>
-                            <button className="px-4 py-2 font-semibold text-sm bg-green-400 text-white rounded-md">Join</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>)
-}
+  switch (status) {
+    case STATUS.CREATE_USER:
+      return <CreateUsername socket={socket} />;
+    case STATUS.LOBBY:
+      return <Lobby socket={socket} games={games} setGames={setGames} />;
+    case STATUS.WAITING_FOR_PLAYER:
+      return (
+        <WaitingForPlayer
+          socket={socket}
+          currentGame={currentGame}
+          setCurrentGame={setCurrentGame}
+        />
+      );
+    case STATUS.IN_GAME:
+      return (
+        <Board
+          socket={socket}
+          currentGame={currentGame}
+          setCurrentGame={setCurrentGame}
+        />
+      );
+    default:
+      return <Error />;
+  }
+};
 
 const Error = () => {
-    return (
-        <section className="container mx-auto">
-            <p>There was an error please reload your browser!</p>
-        </section>
-    )
-}
+  return (
+    <section className="container mx-auto">
+      <p>There was an error please reload your browser!</p>
+    </section>
+  );
+};
 
-export default Game
+export default Game;

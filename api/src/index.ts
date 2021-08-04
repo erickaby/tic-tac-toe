@@ -17,25 +17,77 @@ const io = new Server(server, {
       }
 });
 
+interface ISocket extends Socket {
+    username?: string;
+}
 
+// Register a middleware which checks the username
+io.use((socket: ISocket, next) => {
+    const username = socket.handshake.auth.username;
+    if (!username) {
+        return next(new Error('invalid username!'))
+    }
+    socket.username = username;
+    console.log('socket username:', socket.username)
+    next();
+})
+
+
+const games: Game[] = []
 
 // Run when client connects
-io.on('connection', (socket: Socket) => {
+io.on('connection', (socket: ISocket) => {
     console.log('a user connected');
 
+    // Join the lobby room
+    socket.join('lobby');
+    // Send the current available games to the user.
+    socket.emit("connected", games);
 
-    socket.on('joinLobby', () => {
-
-        // Give the current user a message.
-        socket.emit('message', 'Welcome to the game.')
-
-        // Broadcast when a user connects.
-        // socket.broadcast
-        //     .to(user.game)
-        //     .emit('message', `${user.username} has joined the game`)
-        
-        // io.to(user.game).emit()
+    socket.on('create game', () => {
+        console.log('create the game')
+        if (socket.username != undefined) {
+            const newGame = new Game(socket.username, socket.id)
+            games.push(newGame)
+            socket.join(newGame.id)
+            socket.to('lobby').emit("games", games);
+            socket.emit('waiting for player', newGame)
+        }
     })
+
+    socket.on('join game', (id) => {
+        const game = games.find((v) => v.id === id)
+        if (game != undefined && socket.username != undefined && !game.isFull()) {
+            socket.join(game.id)
+            game.addSecondPlayer(socket.username, socket.id)
+            socket.to('lobby').emit("games", games);
+            socket.emit('waiting for player', game)
+            socket.to(game.id).emit('player joined', game)
+        }
+    })
+
+    socket.on('start game', (id) => {
+        const game = games.find((v) => v.id === id)
+        if (game != undefined && socket.username != undefined && game.isFull()) {
+            game.startGame()
+            console.log('Start Game!')
+            socket.emit('play game', game)
+            socket.to(game.id).emit('play game', game)
+        }
+    })
+
+    socket.on('set mark', ({ id, x, y }: { id: string, x: number, y: number }) => {
+        const game = games.find((v) => v.id === id)
+        if (game != undefined && socket.username != undefined) {
+            game.playTurn({ x, y, playerId: socket.id })
+            socket.emit('update board', game)
+            socket.to(game.id).emit('update board', game)
+        }
+    })
+
+    socket.on("disconnect", () => {
+        console.log(`disconnect ${socket.id}`);
+    });
 })
 
 
