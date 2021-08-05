@@ -47,7 +47,18 @@ By default the api project will be on running on [http://localhost:8001](http://
 
 By default the web project will be on running on [http://localhost:3000](http://localhost:3000).
 
-Go the the web project url to play the game.
+## Playing
+While both the api and web instances are running
+
+Go to the web project url to play [http://localhost:3000](http://localhost:3000)
+
+1. A screen asking for a username will display. Enter a random username.
+2. You will be taken to a lobby. Click to create a game or click to join a game from the list of current games.
+3. You will then be taken to a waiting screen, a player can click to then start the game once both players are in the waiting screen.
+4. The game will then start. Play until the game is over.
+5. When the game is over a button will be displayed to go back to the lobby.
+6. You can then start a new game or join again.
+
 ## Environment Variables
 
 The environment variable file (`.env`) only holds a single variable:
