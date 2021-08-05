@@ -32,7 +32,10 @@ Create a environment variable file (`.env`) in the root of the web project folde
 ```bash
 # Copy file and rename in the web project folder.
 cd web && cp .env.example .env
+``` 
 
+Build the api project.
+```bash
 # Build the api project
 # NOTE: if any ts-node errors from the below command please install ts-node globally with `npm i -g ts-node`
 cd api && npm run build
