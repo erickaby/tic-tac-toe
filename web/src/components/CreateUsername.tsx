@@ -8,26 +8,29 @@ interface IProps {
 }
 
 const CreateUsername = ({ socket }: IProps) => {
+  // State for the input field in the html
   const [username, setUsername] = useState<string | null>(null);
 
+  /**
+   * Register listener functions which fire at certain states of the game.
+   *
+   * The functions are mainly used to change current view and update data.
+   */
   useEffect(() => {
+    // Used to check for any errors when choosing a username.
     const connectErrorListener = (err: { message: string }) => {
       if (err.message === 'invalid username') {
         console.log('username is already selected!');
       }
     };
-    const connectedListener = (message: any) => {
-      console.log(message);
-    };
 
-    socket.on('users', connectedListener);
     socket.on('connect_error', connectErrorListener);
     return () => {
-      socket.off('users', connectedListener);
       socket.off('connect_error', connectErrorListener);
     };
   }, [socket]);
 
+  // function to attach the username to the socket io instance and connect to the server.
   const handleCreateUsername = () => {
     socket.auth = { username };
     socket.connect();
@@ -36,11 +39,8 @@ const CreateUsername = ({ socket }: IProps) => {
   return (
     <section className="container mx-auto">
       <div className="flex justify-center">
+        {/* Basic form to handle entering the username */}
         <div className="flex flex-col gap-3 p-5 bg-white rounded-lg shadow-xl items-center">
-          {/* <img
-            className="rounded-lg h-16 w-16"
-            src={`http://tinygraphs.com/labs/isogrids/hexa16/player2?theme=heatwave&numcolors=4&size=220&fmt=svg`}
-          /> */}
           <label className="text-gray-800 font-semibold text-xs">
             Enter your player name
             <input

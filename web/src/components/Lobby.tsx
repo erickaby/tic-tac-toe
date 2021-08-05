@@ -9,14 +9,17 @@ type IProps = {
 };
 
 const Lobby = ({ socket, games, setGames }: IProps) => {
+  /**
+   * Register listener functions which fire at certain states of the game.
+   *
+   * The functions are mainly used to change current view and update data.
+   */
   useEffect(() => {
     const connectedListener = (games: IGame[]) => {
-      console.log(games);
       setGames(games);
     };
 
     const gameListener = (games: IGame[]) => {
-      console.log('Game was created!');
       setGames(games);
     };
 
@@ -28,13 +31,13 @@ const Lobby = ({ socket, games, setGames }: IProps) => {
     };
   }, [socket]);
 
+  // Sends socket io server that the user wants to create a game
   const handleCreateGame = () => {
-    console.log('Create game btn');
     socket.emit('create game');
   };
 
+  // Send socket io server which game the player wishes to join.
   const handleJoinGame = (id: string) => {
-    console.log('Join game with id: ', id);
     socket.emit('join game', id);
   };
 
@@ -51,27 +54,32 @@ const Lobby = ({ socket, games, setGames }: IProps) => {
           </button>
         </div>
         <div className="grid gap-3">
+          {/* Displays all the current games and their current state. */}
           {games.map((game, i) => (
             <div
               key={i}
               className="flex justify-between p-5 bg-white rounded-lg shadow-xl items-center"
             >
-              <div className="flex items-center space-x-5">
-                <img
-                  className="rounded-lg h-16 w-16"
-                  src={`http://tinygraphs.com/labs/isogrids/hexa16/player2?theme=heatwave&numcolors=4&size=220&fmt=svg`}
-                />
+              <div className="flex items-center space-x-10">
+                {/* Show the players */}
                 {game.players.map((player, i) => (
-                  <h2 key={i}>{player.username}</h2>
+                  <div key={i}>
+                    <p className="text-xs text-gray-500">Player {i + 1}</p>
+                    <h2>{player.username}</h2>
+                  </div>
                 ))}
               </div>
+              <div>{game.status}</div>
+              {/* Button to join the game */}
               <div>
                 <button
                   onClick={() => handleJoinGame(game.id)}
                   disabled={game.players.length >= 2}
-                  className="px-4 py-2 font-semibold text-sm bg-green-400 text-white rounded-md"
+                  className={`px-4 py-2 font-semibold text-sm  text-white rounded-md ${
+                    game.players.length >= 2 ? 'bg-red-400' : 'bg-green-400'
+                  }`}
                 >
-                  Join
+                  {game.players.length >= 2 ? 'In Game' : 'Join'}
                 </button>
               </div>
             </div>

@@ -9,9 +9,13 @@ type IProps = {
 };
 
 const WaitingForPlayer = ({ socket, currentGame, setCurrentGame }: IProps) => {
+  /**
+   * Register listener functions which fire at certain states of the game.
+   *
+   * The functions are mainly used to change current view and update data.
+   */
   useEffect(() => {
     const playerJoinedListener = (game: IGame) => {
-      console.log('Another player has joined your game');
       setCurrentGame(game);
     };
 
@@ -21,6 +25,7 @@ const WaitingForPlayer = ({ socket, currentGame, setCurrentGame }: IProps) => {
     };
   }, [socket]);
 
+  // sends socket io server that to start the game with the id
   const handleStartGame = () => {
     if (currentGame) {
       socket.emit('start game', currentGame.id);
@@ -29,6 +34,7 @@ const WaitingForPlayer = ({ socket, currentGame, setCurrentGame }: IProps) => {
 
   return (
     <section className="container mx-auto">
+      {/* Display the players waiting for the game */}
       {currentGame && (
         <div className="p-10">
           <h1 className="text-center font-bold text-2xl pb-5">
@@ -38,19 +44,11 @@ const WaitingForPlayer = ({ socket, currentGame, setCurrentGame }: IProps) => {
           </h1>
           <div className="flex justify-center gap-5">
             <div className="flex flex-col items-center justify-center text-center p-5 w-44 bg-white rounded-lg shadow-xl">
-              <img
-                className="rounded-lg h-32 w-32"
-                src={`http://tinygraphs.com/labs/isogrids/hexa16/player1?theme=bythepool&numcolors=4&size=220&fmt=svg`}
-              />
               <h2>{currentGame.players[0].username}</h2>
             </div>
             <div className="flex flex-col items-center justify-center text-center p-5 w-44 bg-white rounded-lg shadow-xl">
               {currentGame.players.length > 1 ? (
                 <div>
-                  <img
-                    className="rounded-lg h-32 w-32"
-                    src={`http://tinygraphs.com/labs/isogrids/hexa16/player2?theme=heatwave&numcolors=4&size=220&fmt=svg`}
-                  />
                   <h2>{currentGame.players[1].username}</h2>
                 </div>
               ) : (
@@ -58,6 +56,7 @@ const WaitingForPlayer = ({ socket, currentGame, setCurrentGame }: IProps) => {
               )}
             </div>
           </div>
+          {/* When both players have joined start click the button to start the game */}
           <div className="flex justify-center pt-5">
             {currentGame.players.length > 1 && (
               <button
