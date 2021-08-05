@@ -42,7 +42,7 @@ const Board = ({ socket, currentGame, setCurrentGame }: IProps) => {
    */
   const handleSetMark = (x: Number, y: Number) => {
     // console.log(`Set mark at: ${x}, ${y}`);
-    if (currentGame != null) {
+    if (currentGame !== null) {
       socket.emit('set mark', { id: currentGame.id, x, y });
     }
   };
@@ -89,8 +89,8 @@ const Board = ({ socket, currentGame, setCurrentGame }: IProps) => {
                     className="w-44 h-44 cursor-pointer bg-white rounded-lg shadow-xl inline-flex justify-center items-center p-5 border-4 border-white hover:border-gray-400"
                   >
                     {/* Used to display either an X or Y */}
-                    {col != -1 ? (
-                      col == 0 ? (
+                    {col !== -1 ? (
+                      col === 0 ? (
                         <SiZeromq className="text-red-600 w-16 h-16" />
                       ) : (
                         <SiXPack className="text-blue-600 w-16 h-16" />

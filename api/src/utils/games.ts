@@ -1,3 +1,4 @@
+import { stringify } from 'querystring';
 import { v4 as uuidv4 } from 'uuid';
 
 enum GameStatus {
@@ -98,18 +99,19 @@ class Game {
 
       const b1 = flatBoard[p1];
       // Check if p1 is empty
-      if (b1 == -1) return false;
+      if (b1 === -1) return false;
       const b2 = flatBoard[p2];
       // Check if p2 isn't p1
-      if (b1 != b2) return false;
+      if (b1 !== b2) return false;
       const b3 = flatBoard[p3];
       // Check if p3 isn't p2
-      if (b2 != b3) return false;
-      return b1;
+      if (b2 !== b3) return false;
+      // Needs to parse as string or check condition cannot work.
+      return b1 + '';
     };
 
     const draw = () =>
-      !this.board.reduce((acc, val) => acc.concat(val), []).includes(-1) && 2;
+      !this.board.reduce((acc, val) => acc.concat(val), []).includes(-1) && '2';
 
     // Check if the board has any winners, using all the positions which are winning positions.
     const check =
@@ -130,9 +132,9 @@ class Game {
     // If winner, update the game status.
     if (check) {
       // Update status
-      if (check == 0) this.status = GameStatus.NAUGHTS_WIN;
-      if (check == 1) this.status = GameStatus.CROSSES_WIN;
-      if (check == 2) this.status = GameStatus.DRAW;
+      if (check === '0') this.status = GameStatus.NAUGHTS_WIN;
+      if (check === '1') this.status = GameStatus.CROSSES_WIN;
+      if (check === '2') this.status = GameStatus.DRAW;
     }
 
     return check;

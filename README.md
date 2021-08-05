@@ -32,13 +32,17 @@ Create a environment variable file (`.env`) in the root of the web project folde
 ```bash
 # Copy file and rename in the web project folder.
 cd web && cp .env.example .env
+
+# Build the api project
+# NOTE: if any ts-node errors from the below command please install ts-node globally with `npm i -g ts-node`
+cd api && npm run build
 ``` 
 
 ## Usage
 Both the api and web project must be ran in parallel.
 ```bash
 # Running the api project
-cd api && npm run start
+cd api && npm run build-start
 
 # Running the web project
 cd web && npm run start 
@@ -59,7 +63,7 @@ Go to the web project url to play [http://localhost:3000](http://localhost:3000)
 5. When the game is over a button will be displayed to go back to the lobby.
 6. You can then start a new game or join again.
 
-(To play yourself, open up a browser in incognito mode and go to the url. You will then have two browsers open and can play against each other.)
+(To play yourself, open up another tab in the browser and go to the url. You will then have two tabs open and can play against each other.)
 
 ## Environment Variables
 
